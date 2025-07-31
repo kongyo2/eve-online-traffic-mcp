@@ -73,6 +73,73 @@ export interface ESIRouteInfo {
   avoided_systems?: number[];
 }
 
+export interface ESISystemKills {
+  system_id: number;
+  npc_kills: number;
+  pod_kills: number;
+  ship_kills: number;
+}
+
+export interface EveKillKillmail {
+  killmail_id: number;
+  total_value: number;
+  system_id: number;
+  system_name: string;
+  system_security: number;
+  region_id: number;
+  region_name: Record<string, string>;
+  kill_time: string;
+  attackerCount: number;
+  commentCount: number;
+  is_npc: boolean;
+  is_solo: boolean;
+  victim: {
+    ship_id: number;
+    ship_name: Record<string, string>;
+    ship_group_name: Record<string, string>;
+    character_id: number;
+    character_name: string;
+    corporation_id: number;
+    corporation_name: string;
+    alliance_id: number;
+    alliance_name: string;
+    faction_id: number;
+    faction_name: string;
+  };
+  finalblow: {
+    character_id: number;
+    character_name: string;
+    corporation_id: number;
+    corporation_name: string;
+    alliance_id: number;
+    alliance_name: string;
+    faction_id: number;
+    faction_name: string;
+    ship_group_name: Record<string, string>;
+  };
+}
+
+export interface EveKillBattlesResponse {
+  totalItems: number;
+  totalPages: number;
+  currentPage: number;
+  itemsPerPage: number;
+  battles: Array<{
+    battle_id: string;
+    system_id: number;
+    system_name: string;
+    region_id: number;
+    region_name: string;
+    start_time: string;
+    end_time: string;
+    total_kills: number;
+    total_value: number;
+    participants: number;
+  }>;
+}
+
+
+
 export class ESIClient {
   private readonly baseUrl = 'https://esi.evetech.net/latest';
   private readonly userAgent = 'EVE-Traffic-MCP/1.0.0';
@@ -215,7 +282,7 @@ export class ESIClient {
   async getMultipleSolarSystemInfo(systemIds: number[]): Promise<ESISolarSystemInfo[]> {
     const promises = systemIds.map(id => this.getSolarSystemInfo(id));
     const results = await Promise.allSettled(promises);
-    
+
     return results
       .filter((result): result is PromiseFulfilledResult<ESISolarSystemInfo> => result.status === 'fulfilled')
       .map(result => result.value);
@@ -231,7 +298,7 @@ export class ESIClient {
     avoidSystems?: number[]
   ): Promise<number[]> {
     let url = `${this.baseUrl}/route/${originId}/${destinationId}/?flag=${flag}`;
-    
+
     if (avoidSystems && avoidSystems.length > 0) {
       const avoidParams = avoidSystems.map(id => `avoid=${id}`).join('&');
       url += `&${avoidParams}`;
@@ -265,7 +332,7 @@ export class ESIClient {
   ): Promise<ESIRouteInfo> {
     // Get the route
     const route = await this.calculateRoute(originId, destinationId, flag, avoidSystems);
-    
+
     // Get system names for origin and destination
     const systemNames = await this.idsToNames([originId, destinationId]);
     const originName = systemNames.find(s => s.id === originId)?.name || `System ${originId}`;
@@ -286,4 +353,106 @@ export class ESIClient {
       avoided_systems: avoidSystems
     };
   }
+
+  /**
+   * Get system kills data from ESI
+   */
+  async getSystemKills(): Promise<ESISystemKills[]> {
+    const response = await fetch(`${this.baseUrl}/universe/system_kills/`, {
+      method: 'GET',
+      headers: {
+        'User-Agent': this.userAgent,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`ESI API error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json() as ESISystemKills[];
+  }
+
+  /**
+   * Get system kills data for a specific system
+   */
+  async getSystemKillsById(systemId: number): Promise<ESISystemKills | null> {
+    const allKills = await this.getSystemKills();
+    return allKills.find(kill => kill.system_id === systemId) || null;
+  }
+
+  /**
+   * Get system jumps data from ESI (12-hour statistics)
+   */
+  async getSystemJumps(): Promise<Array<{ system_id: number; ship_jumps: number }>> {
+    const response = await fetch(`${this.baseUrl}/universe/system_jumps/`, {
+      method: 'GET',
+      headers: {
+        'User-Agent': this.userAgent,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`ESI API error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json() as Array<{ system_id: number; ship_jumps: number }>;
+  }
+
+  /**
+   * Get system jumps data for a specific system (12-hour statistics)
+   */
+  async getSystemJumpsById(systemId: number): Promise<{ system_id: number; ship_jumps: number } | null> {
+    const allJumps = await this.getSystemJumps();
+    return allJumps.find(jump => jump.system_id === systemId) || null;
+  }
+
+  /**
+   * Get recent killmails for a system from EVE-KILL
+   */
+  async getSystemKillmails(systemId: number, limit: number = 50): Promise<EveKillKillmail[]> {
+    const response = await fetch(`https://eve-kill.com/api/killlist/system/${systemId}?limit=${limit}`, {
+      method: 'GET',
+      headers: {
+        'User-Agent': this.userAgent,
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return []; // No killmails found
+      }
+      throw new Error(`EVE-KILL API error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json() as EveKillKillmail[];
+  }
+
+  /**
+   * Get battle information for a system from EVE-KILL
+   */
+  async getSystemBattles(systemId: number, page: number = 1): Promise<EveKillBattlesResponse> {
+    const response = await fetch(`https://eve-kill.com/api/solarsystems/${systemId}/battles?page=${page}`, {
+      method: 'GET',
+      headers: {
+        'User-Agent': this.userAgent,
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return {
+          totalItems: 0,
+          totalPages: 0,
+          currentPage: 1,
+          itemsPerPage: 20,
+          battles: []
+        };
+      }
+      throw new Error(`EVE-KILL API error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json() as EveKillBattlesResponse;
+  }
+
+
 }

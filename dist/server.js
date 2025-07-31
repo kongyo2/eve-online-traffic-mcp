@@ -2,6 +2,7 @@ import { FastMCP } from "fastmcp";
 import { solarSystemNameToIdTool, stationNameToIdTool, regionNameToIdTool, universalNameToIdTool } from "./name-to-id-tools.js";
 import { solarSystemInfoTool, stargateInfoTool, systemConnectionMapTool } from "./system-info-tools.js";
 import { calculateRouteTool, calculateMultipleRoutesTool, findSystemsInRangeTool } from "./route-tools.js";
+import { getSystemCombatStatsTool, getMultipleSystemCombatStatsTool, findDangerousSystemsTool } from "./combat-stats-tools.js";
 const server = new FastMCP({
     name: "EVE Online Traffic MCP",
     version: "1.0.0",
@@ -19,6 +20,10 @@ server.addTool(systemConnectionMapTool);
 server.addTool(calculateRouteTool);
 server.addTool(calculateMultipleRoutesTool);
 server.addTool(findSystemsInRangeTool);
+// Add combat statistics tools
+server.addTool(getSystemCombatStatsTool);
+server.addTool(getMultipleSystemCombatStatsTool);
+server.addTool(findDangerousSystemsTool);
 server.addResource({
     async load() {
         return {
@@ -44,7 +49,12 @@ Route Calculation:
 - calculate_multiple_routes: Calculate routes from one origin to multiple destinations
 - find_systems_in_range: Find all systems within a specified jump range
 
-All tools use the official EVE Online ESI API and SDE data.
+Combat Statistics:
+- get_system_combat_stats: Get comprehensive combat statistics for a solar system
+- get_multiple_system_combat_stats: Get combat statistics for multiple systems
+- find_dangerous_systems: Find the most dangerous systems based on PvP activity
+
+All tools use the official EVE Online ESI API, EVE-KILL API, and SDE data.
 `,
         };
     },
@@ -129,6 +139,40 @@ server.addPrompt({
         return `Please find all solar systems within ${args.max_jumps} jumps of ${args.origin} using ${routeType} routing. Provide analysis of:\n\n- Systems by jump distance\n- Security status distribution\n- Potential activities in nearby systems\n- Strategic locations\n\nUse the find_systems_in_range tool and supplement with system information as needed.`;
     },
     name: "eve-range-analysis",
+});
+server.addPrompt({
+    arguments: [
+        {
+            description: "Solar system name or ID to analyze",
+            name: "system",
+            required: true,
+        },
+    ],
+    description: "Analyze combat activity and danger level for a solar system",
+    load: async (args) => {
+        return `Please analyze the combat activity and danger level for ${args.system}. Provide detailed information about:\n\n- Current PvP activity (ship and pod kills)\n- Recent killmail analysis\n- Battle history\n- Danger assessment and recommendations\n- Best times to avoid the system\n\nUse the get_system_combat_stats tool and provide actionable intelligence for pilots.`;
+    },
+    name: "eve-combat-analysis",
+});
+server.addPrompt({
+    arguments: [
+        {
+            description: "Region ID, constellation ID, or comma-separated system IDs",
+            name: "search_area",
+            required: true,
+        },
+        {
+            description: "Maximum number of systems to analyze",
+            name: "limit",
+            required: false,
+        },
+    ],
+    description: "Find the most dangerous systems in a region or area",
+    load: async (args) => {
+        const limit = args.limit || '10';
+        return `Please find the most dangerous systems in ${args.search_area}. Analyze up to ${limit} systems and provide:\n\n- Ranking by danger level\n- Current PvP activity levels\n- Recent high-value kills\n- Threat assessment for each system\n- Recommendations for safe travel\n\nUse the find_dangerous_systems tool and provide a comprehensive threat report.`;
+    },
+    name: "eve-danger-assessment",
 });
 server.start({
     transportType: "stdio",

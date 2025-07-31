@@ -174,4 +174,90 @@ export class ESIClient {
             avoided_systems: avoidSystems
         };
     }
+    /**
+     * Get system kills data from ESI
+     */
+    async getSystemKills() {
+        const response = await fetch(`${this.baseUrl}/universe/system_kills/`, {
+            method: 'GET',
+            headers: {
+                'User-Agent': this.userAgent,
+            },
+        });
+        if (!response.ok) {
+            throw new Error(`ESI API error: ${response.status} ${response.statusText}`);
+        }
+        return await response.json();
+    }
+    /**
+     * Get system kills data for a specific system
+     */
+    async getSystemKillsById(systemId) {
+        const allKills = await this.getSystemKills();
+        return allKills.find(kill => kill.system_id === systemId) || null;
+    }
+    /**
+     * Get system jumps data from ESI (12-hour statistics)
+     */
+    async getSystemJumps() {
+        const response = await fetch(`${this.baseUrl}/universe/system_jumps/`, {
+            method: 'GET',
+            headers: {
+                'User-Agent': this.userAgent,
+            },
+        });
+        if (!response.ok) {
+            throw new Error(`ESI API error: ${response.status} ${response.statusText}`);
+        }
+        return await response.json();
+    }
+    /**
+     * Get system jumps data for a specific system (12-hour statistics)
+     */
+    async getSystemJumpsById(systemId) {
+        const allJumps = await this.getSystemJumps();
+        return allJumps.find(jump => jump.system_id === systemId) || null;
+    }
+    /**
+     * Get recent killmails for a system from EVE-KILL
+     */
+    async getSystemKillmails(systemId, limit = 50) {
+        const response = await fetch(`https://eve-kill.com/api/killlist/system/${systemId}?limit=${limit}`, {
+            method: 'GET',
+            headers: {
+                'User-Agent': this.userAgent,
+            },
+        });
+        if (!response.ok) {
+            if (response.status === 404) {
+                return []; // No killmails found
+            }
+            throw new Error(`EVE-KILL API error: ${response.status} ${response.statusText}`);
+        }
+        return await response.json();
+    }
+    /**
+     * Get battle information for a system from EVE-KILL
+     */
+    async getSystemBattles(systemId, page = 1) {
+        const response = await fetch(`https://eve-kill.com/api/solarsystems/${systemId}/battles?page=${page}`, {
+            method: 'GET',
+            headers: {
+                'User-Agent': this.userAgent,
+            },
+        });
+        if (!response.ok) {
+            if (response.status === 404) {
+                return {
+                    totalItems: 0,
+                    totalPages: 0,
+                    currentPage: 1,
+                    itemsPerPage: 20,
+                    battles: []
+                };
+            }
+            throw new Error(`EVE-KILL API error: ${response.status} ${response.statusText}`);
+        }
+        return await response.json();
+    }
 }
