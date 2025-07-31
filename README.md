@@ -148,6 +148,60 @@ Generate connection maps showing stargate links between systems.
 }
 ```
 
+### Route Calculation Tools
+
+#### `calculate_route`
+Calculate the shortest route between two EVE Online solar systems.
+
+**Parameters:**
+- `origin`: Origin solar system name or ID
+- `destination`: Destination solar system name or ID
+- `flag`: (Optional) `shortest` (default), `secure`, or `insecure`
+- `avoidSystems`: (Optional) Array of system names or IDs to avoid
+
+**Example:**
+```json
+{
+ "origin": "Jita",
+ "destination": "Amarr",
+ "flag": "secure"
+}
+```
+
+#### `calculate_multiple_routes`
+Calculate routes from one origin to multiple destinations.
+
+**Parameters:**
+- `origin`: Origin solar system name or ID
+- `destinations`: Array of destination system names or IDs (max 20)
+- `flag`: (Optional) `shortest` (default), `secure`, or `insecure`
+- `avoidSystems`: (Optional) Array of system names or IDs to avoid
+
+**Example:**
+```json
+{
+ "origin": "Jita",
+ "destinations": ["Amarr", "Dodixie", "Rens"],
+}
+```
+
+#### `find_systems_in_range`
+Find all solar systems within a specified jump range from an origin system.
+
+**Parameters:**
+- `origin`: Origin solar system name or ID
+- `maxJumps`: Maximum number of jumps (1-10)
+- `flag`: (Optional) `shortest` (default), `secure`, or `insecure`
+- `avoidSystems`: (Optional) Array of system names or IDs to avoid
+
+**Example:**
+```json
+{
+ "origin": "Jita",
+ "maxJumps": 5
+}
+```
+
 ## Available Prompts
 
 ### `eve-entity-lookup`
