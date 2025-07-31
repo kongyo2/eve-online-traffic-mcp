@@ -58,6 +58,21 @@ export interface ESIStargateInfo {
   };
 }
 
+export interface ESIRouteInfo {
+  route: number[];
+  jumps: number;
+  origin: {
+    id: number;
+    name: string;
+  };
+  destination: {
+    id: number;
+    name: string;
+  };
+  flag: 'shortest' | 'secure' | 'insecure';
+  avoided_systems?: number[];
+}
+
 export class ESIClient {
   private readonly baseUrl = 'https://esi.evetech.net/latest';
   private readonly userAgent = 'EVE-Traffic-MCP/1.0.0';
@@ -204,5 +219,71 @@ export class ESIClient {
     return results
       .filter((result): result is PromiseFulfilledResult<ESISolarSystemInfo> => result.status === 'fulfilled')
       .map(result => result.value);
+  }
+
+  /**
+   * Calculate route between two solar systems
+   */
+  async calculateRoute(
+    originId: number,
+    destinationId: number,
+    flag: 'shortest' | 'secure' | 'insecure' = 'shortest',
+    avoidSystems?: number[]
+  ): Promise<number[]> {
+    let url = `${this.baseUrl}/route/${originId}/${destinationId}/?flag=${flag}`;
+    
+    if (avoidSystems && avoidSystems.length > 0) {
+      const avoidParams = avoidSystems.map(id => `avoid=${id}`).join('&');
+      url += `&${avoidParams}`;
+    }
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'User-Agent': this.userAgent,
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error('No route found between the specified systems');
+      }
+      throw new Error(`ESI API error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json() as number[];
+  }
+
+  /**
+   * Calculate route with detailed information
+   */
+  async calculateRouteWithDetails(
+    originId: number,
+    destinationId: number,
+    flag: 'shortest' | 'secure' | 'insecure' = 'shortest',
+    avoidSystems?: number[]
+  ): Promise<ESIRouteInfo> {
+    // Get the route
+    const route = await this.calculateRoute(originId, destinationId, flag, avoidSystems);
+    
+    // Get system names for origin and destination
+    const systemNames = await this.idsToNames([originId, destinationId]);
+    const originName = systemNames.find(s => s.id === originId)?.name || `System ${originId}`;
+    const destinationName = systemNames.find(s => s.id === destinationId)?.name || `System ${destinationId}`;
+
+    return {
+      route,
+      jumps: route.length - 1, // Number of jumps is route length minus 1
+      origin: {
+        id: originId,
+        name: originName
+      },
+      destination: {
+        id: destinationId,
+        name: destinationName
+      },
+      flag,
+      avoided_systems: avoidSystems
+    };
   }
 }

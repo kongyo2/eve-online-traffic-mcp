@@ -71,4 +71,107 @@ export class ESIClient {
         const result = await this.namesToIds(regionNames);
         return result.regions || [];
     }
+    /**
+     * Get all solar system IDs
+     */
+    async getAllSolarSystemIds() {
+        const response = await fetch(`${this.baseUrl}/universe/systems/`, {
+            method: 'GET',
+            headers: {
+                'User-Agent': this.userAgent,
+            },
+        });
+        if (!response.ok) {
+            throw new Error(`ESI API error: ${response.status} ${response.statusText}`);
+        }
+        return await response.json();
+    }
+    /**
+     * Get solar system information by ID
+     */
+    async getSolarSystemInfo(systemId) {
+        const response = await fetch(`${this.baseUrl}/universe/systems/${systemId}/`, {
+            method: 'GET',
+            headers: {
+                'User-Agent': this.userAgent,
+            },
+        });
+        if (!response.ok) {
+            throw new Error(`ESI API error: ${response.status} ${response.statusText}`);
+        }
+        return await response.json();
+    }
+    /**
+     * Get stargate information by ID
+     */
+    async getStargateInfo(stargateId) {
+        const response = await fetch(`${this.baseUrl}/universe/stargates/${stargateId}/`, {
+            method: 'GET',
+            headers: {
+                'User-Agent': this.userAgent,
+            },
+        });
+        if (!response.ok) {
+            throw new Error(`ESI API error: ${response.status} ${response.statusText}`);
+        }
+        return await response.json();
+    }
+    /**
+     * Get multiple solar system information by IDs
+     */
+    async getMultipleSolarSystemInfo(systemIds) {
+        const promises = systemIds.map(id => this.getSolarSystemInfo(id));
+        const results = await Promise.allSettled(promises);
+        return results
+            .filter((result) => result.status === 'fulfilled')
+            .map(result => result.value);
+    }
+    /**
+     * Calculate route between two solar systems
+     */
+    async calculateRoute(originId, destinationId, flag = 'shortest', avoidSystems) {
+        let url = `${this.baseUrl}/route/${originId}/${destinationId}/?flag=${flag}`;
+        if (avoidSystems && avoidSystems.length > 0) {
+            const avoidParams = avoidSystems.map(id => `avoid=${id}`).join('&');
+            url += `&${avoidParams}`;
+        }
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'User-Agent': this.userAgent,
+            },
+        });
+        if (!response.ok) {
+            if (response.status === 404) {
+                throw new Error('No route found between the specified systems');
+            }
+            throw new Error(`ESI API error: ${response.status} ${response.statusText}`);
+        }
+        return await response.json();
+    }
+    /**
+     * Calculate route with detailed information
+     */
+    async calculateRouteWithDetails(originId, destinationId, flag = 'shortest', avoidSystems) {
+        // Get the route
+        const route = await this.calculateRoute(originId, destinationId, flag, avoidSystems);
+        // Get system names for origin and destination
+        const systemNames = await this.idsToNames([originId, destinationId]);
+        const originName = systemNames.find(s => s.id === originId)?.name || `System ${originId}`;
+        const destinationName = systemNames.find(s => s.id === destinationId)?.name || `System ${destinationId}`;
+        return {
+            route,
+            jumps: route.length - 1, // Number of jumps is route length minus 1
+            origin: {
+                id: originId,
+                name: originName
+            },
+            destination: {
+                id: destinationId,
+                name: destinationName
+            },
+            flag,
+            avoided_systems: avoidSystems
+        };
+    }
 }

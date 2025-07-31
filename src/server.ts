@@ -10,6 +10,11 @@ import {
   stargateInfoTool,
   systemConnectionMapTool
 } from "./system-info-tools.js";
+import {
+  calculateRouteTool,
+  calculateMultipleRoutesTool,
+  findSystemsInRangeTool
+} from "./route-tools.js";
 
 const server = new FastMCP({
   name: "EVE Online Traffic MCP",
@@ -26,6 +31,11 @@ server.addTool(universalNameToIdTool);
 server.addTool(solarSystemInfoTool);
 server.addTool(stargateInfoTool);
 server.addTool(systemConnectionMapTool);
+
+// Add route calculation tools
+server.addTool(calculateRouteTool);
+server.addTool(calculateMultipleRoutesTool);
+server.addTool(findSystemsInRangeTool);
 
 server.addResource({
   async load() {
@@ -46,6 +56,11 @@ System Information:
 - solar_system_info: Get comprehensive solar system information from ESI and SDE
 - stargate_info: Get stargate information and connections
 - system_connection_map: Generate connection maps for solar systems
+
+Route Calculation:
+- calculate_route: Calculate the shortest route between two solar systems
+- calculate_multiple_routes: Calculate routes from one origin to multiple destinations
+- find_systems_in_range: Find all systems within a specified jump range
 
 All tools use the official EVE Online ESI API and SDE data.
 `,
@@ -84,6 +99,58 @@ server.addPrompt({
     return `Please analyze these EVE Online solar systems and provide detailed information including security status, connections, and traffic data:\n\n${args.systems}\n\nUse the appropriate tools to first convert names to IDs if needed, then get system information and connection maps.`;
   },
   name: "eve-system-analysis",
+});
+
+server.addPrompt({
+  arguments: [
+    {
+      description: "Origin solar system name or ID",
+      name: "origin",
+      required: true,
+    },
+    {
+      description: "Destination solar system name or ID",
+      name: "destination",
+      required: true,
+    },
+    {
+      description: "Route preference: shortest, secure, or insecure",
+      name: "route_type",
+      required: false,
+    },
+  ],
+  description: "Calculate and analyze a route between two EVE Online solar systems",
+  load: async (args) => {
+    const routeType = args.route_type || 'shortest';
+    return `Please calculate a route from ${args.origin} to ${args.destination} using ${routeType} routing. Provide detailed information about the route including:\n\n- Total jump count\n- Systems along the route\n- Security status of systems\n- Any notable waypoints or dangerous areas\n\nUse the calculate_route tool and supplement with system information as needed.`;
+  },
+  name: "eve-route-planning",
+});
+
+server.addPrompt({
+  arguments: [
+    {
+      description: "Origin solar system name or ID",
+      name: "origin",
+      required: true,
+    },
+    {
+      description: "Maximum number of jumps to search",
+      name: "max_jumps",
+      required: true,
+    },
+    {
+      description: "Route preference: shortest, secure, or insecure",
+      name: "route_type",
+      required: false,
+    },
+  ],
+  description: "Find systems within jump range for activity planning",
+  load: async (args) => {
+    const routeType = args.route_type || 'shortest';
+    return `Please find all solar systems within ${args.max_jumps} jumps of ${args.origin} using ${routeType} routing. Provide analysis of:\n\n- Systems by jump distance\n- Security status distribution\n- Potential activities in nearby systems\n- Strategic locations\n\nUse the find_systems_in_range tool and supplement with system information as needed.`;
+  },
+  name: "eve-range-analysis",
 });
 
 server.start({
