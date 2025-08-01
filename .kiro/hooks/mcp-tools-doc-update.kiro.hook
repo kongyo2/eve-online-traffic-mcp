@@ -1,0 +1,17 @@
+{
+  "enabled": true,
+  "name": "MCP Tools Documentation Updater",
+  "description": "Monitors MCP server tool files for changes and updates TOOLS_DOCUMENTATION.md with the current tool implementations in the existing format",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "src/*-tools.ts",
+      "src/server.ts"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "The MCP server tools have been modified. Please update the TOOLS_DOCUMENTATION.md file to reflect the current state of all implemented tools. Maintain the existing documentation format and structure exactly - do not add new sections or usage examples that weren't there before. Only update the content to match the current tool implementations in the codebase."
+  }
+}
