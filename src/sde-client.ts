@@ -70,6 +70,15 @@ export interface SDEResearchAgentInfo {
   typeID?: number;
 }
 
+export interface SDELandmarkInfo {
+  landmarkID: number;
+  landmarkNameID?: number;
+  descriptionID?: number;
+  position?: number[];
+  locationID?: number;
+  iconID?: number;
+}
+
 export class SDEClient {
   private readonly baseUrl = 'https://sde.jita.space/latest';
   private readonly userAgent = 'EVE-Traffic-MCP/1.0.0';
@@ -352,5 +361,53 @@ export class SDEClient {
       console.warn(`Failed to get agents by location ${locationId}:`, error);
       return [];
     }
+  }
+
+  /**
+   * Get all landmark IDs from SDE
+   */
+  async getAllLandmarkIds(): Promise<number[]> {
+    const response = await fetch(`${this.baseUrl}/universe/landmarks`, {
+      method: 'GET',
+      headers: {
+        'User-Agent': this.userAgent,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`SDE API error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json() as number[];
+  }
+
+  /**
+   * Get landmark information by ID from SDE
+   */
+  async getLandmarkById(landmarkId: number): Promise<SDELandmarkInfo> {
+    const response = await fetch(`${this.baseUrl}/universe/landmarks/${landmarkId}`, {
+      method: 'GET',
+      headers: {
+        'User-Agent': this.userAgent,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`SDE API error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json() as SDELandmarkInfo;
+  }
+
+  /**
+   * Get multiple landmark information by IDs from SDE
+   */
+  async getMultipleLandmarkInfo(landmarkIds: number[]): Promise<SDELandmarkInfo[]> {
+    const promises = landmarkIds.map(id => this.getLandmarkById(id));
+    const results = await Promise.allSettled(promises);
+
+    return results
+      .filter((result): result is PromiseFulfilledResult<SDELandmarkInfo> => result.status === 'fulfilled')
+      .map(result => result.value);
   }
 }

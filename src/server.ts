@@ -29,6 +29,9 @@ import {
   findStationsWithServicesTool,
   getStationAgentsTool
 } from "./station-services-tools.js";
+import {
+  findNearestLandmarksTool
+} from "./landmark-tools.js";
 
 const server = new FastMCP({
   name: "EVE Online Traffic MCP",
@@ -64,6 +67,9 @@ server.addTool(getStationServicesTool);
 server.addTool(getSystemStationsTool);
 server.addTool(findStationsWithServicesTool);
 server.addTool(getStationAgentsTool);
+
+// Add landmark tools
+server.addTool(findNearestLandmarksTool);
 
 server.addResource({
   async load() {
@@ -105,6 +111,9 @@ Combat Statistics:
 - get_system_combat_stats: Get comprehensive combat statistics for a solar system
 - get_multiple_system_combat_stats: Get combat statistics for multiple systems
 - find_dangerous_systems: Find the most dangerous systems based on PvP activity
+
+Landmark Information:
+- find_nearest_landmarks: Find the nearest EVE Online landmarks to a specified solar system
 
 All tools use the official EVE Online ESI API, EVE-KILL API, and SDE data.
 `,
@@ -293,6 +302,33 @@ server.addPrompt({
     return `Please analyze the agents available at these EVE Online stations: ${args.stations}\n\nInclude research agents: ${includeResearch}\n\nUse the get_station_agents tool and provide:\n\n- List of all agents at each station\n- Agent types and specializations\n- Agent levels and quality ratings\n- Corporation affiliations\n- Research agent identification\n- Recommendations for mission running or research`;
   },
   name: "eve-agent-finder",
+});
+
+server.addPrompt({
+  arguments: [
+    {
+      description: "Solar system name or ID to search from",
+      name: "system",
+      required: true,
+    },
+    {
+      description: "Maximum number of landmarks to return (1-50)",
+      name: "limit",
+      required: false,
+    },
+    {
+      description: "Maximum jump distance to search",
+      name: "max_jumps",
+      required: false,
+    },
+  ],
+  description: "Find the nearest EVE Online landmarks to a solar system",
+  load: async (args) => {
+    const limit = args.limit || '10';
+    const maxJumps = args.max_jumps ? ` within ${args.max_jumps} jumps` : '';
+    return `Please find the nearest EVE Online landmarks to ${args.system}${maxJumps}. Return up to ${limit} landmarks and provide:\n\n- Landmark names and descriptions\n- Location information (system, security status, region)\n- Distance in jumps and AU\n- Route availability\n- Recommendations for exploration or navigation\n\nUse the find_nearest_landmarks tool to provide comprehensive landmark information for pilots.`;
+  },
+  name: "eve-landmark-finder",
 });
 
 server.start({
