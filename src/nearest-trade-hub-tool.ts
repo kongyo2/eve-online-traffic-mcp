@@ -51,25 +51,25 @@ export const findNearestTradeHubTool = {
       const tradeHubDistances: TradeHubWithDistance[] = [];
       
       for (const tradeHub of tradeHubsToCheck) {
-        try {
-          // Calculate route to trade hub
-          const routeInfo = await esiClient.calculateRouteWithDetails(
-            originId,
-            tradeHub.systemId,
-            'shortest'
-          );
-          
-          tradeHubDistances.push({
-            tradeHub,
-            distance: routeInfo.jumps,
-            route: routeInfo.route,
-            jumps: routeInfo.jumps
-          });
-        } catch (error) {
-          // Skip trade hubs we can't route to
-          console.warn(`Could not calculate route to ${tradeHub.name}:`, error);
+        // Calculate route to trade hub
+        const routeInfo = await esiClient.calculateRouteWithDetails(
+          originId,
+          tradeHub.systemId,
+          'shortest'
+        );
+
+        // Skip if route calculation failed
+        if (routeInfo.jumps === -1) {
+          console.warn(`Could not calculate route to ${tradeHub.name}`);
           continue;
         }
+        
+        tradeHubDistances.push({
+          tradeHub,
+          distance: routeInfo.jumps,
+          route: routeInfo.route,
+          jumps: routeInfo.jumps
+        });
       }
 
       // Sort by distance (jumps)
@@ -91,19 +91,21 @@ export const findNearestTradeHubTool = {
       // Get the nearest hub
       const nearestHub = filteredResults[0];
 
-      // Get system names for the route
-      const routeSystemNames = await esiClient.idsToNames(nearestHub.route);
-      const routeWithNames = nearestHub.route.map(systemId => {
-        const systemName = routeSystemNames && routeSystemNames.find(s => s.id === systemId);
-        return {
-          id: systemId,
-          name: systemName ? systemName.name : `System ${systemId}`
-        };
-      });
+      // Get system names for the route and the hub in a single call
+      const idsToFetch = [...new Set([...nearestHub.route, nearestHub.tradeHub.systemId])];
+      const allSystemNames = await esiClient.idsToNames(idsToFetch);
 
-      // Get trade hub system name
-      const hubSystemNames = await esiClient.idsToNames([nearestHub.tradeHub.systemId]);
-      const hubSystemName = hubSystemNames && hubSystemNames.length > 0 ? hubSystemNames[0].name : `System ${nearestHub.tradeHub.systemId}`;
+      const getName = (id: number) => {
+        const found = allSystemNames.find(s => s.id === id);
+        return found ? found.name : `System ${id}`;
+      };
+
+      const routeWithNames = nearestHub.route.map(systemId => ({
+        id: systemId,
+        name: getName(systemId),
+      }));
+
+      const hubSystemName = getName(nearestHub.tradeHub.systemId);
 
       return JSON.stringify({
         success: true,

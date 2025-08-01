@@ -435,28 +435,49 @@ export class ESIClient {
     flag: 'shortest' | 'secure' | 'insecure' = 'shortest',
     avoidSystems?: number[]
   ): Promise<ESIRouteInfo> {
-    // Get the route
-    const route = await this.calculateRoute(originId, destinationId, flag, avoidSystems);
+    try {
+      // Get the route
+      const route = await this.calculateRoute(originId, destinationId, flag, avoidSystems);
 
-    // Get system names for origin and destination
-    const systemNames = await this.idsToNames([originId, destinationId]);
-    const originName = systemNames.find(s => s.id === originId)?.name || `System ${originId}`;
-    const destinationName = systemNames.find(s => s.id === destinationId)?.name || `System ${destinationId}`;
+      if (route.length === 0) {
+        return {
+          route: [],
+          jumps: -1,
+          origin: { id: originId, name: '' },
+          destination: { id: destinationId, name: '' },
+          flag,
+        };
+      }
 
-    return {
-      route,
-      jumps: route.length - 1, // Number of jumps is route length minus 1
-      origin: {
-        id: originId,
-        name: originName
-      },
-      destination: {
-        id: destinationId,
-        name: destinationName
-      },
-      flag,
-      avoided_systems: avoidSystems
-    };
+      // Get system names for origin and destination
+      const systemNames = await this.idsToNames([originId, destinationId]);
+      const originName = systemNames.find(s => s.id === originId)?.name || `System ${originId}`;
+      const destinationName = systemNames.find(s => s.id === destinationId)?.name || `System ${destinationId}`;
+
+      return {
+        route,
+        jumps: route.length - 1, // Number of jumps is route length minus 1
+        origin: {
+          id: originId,
+          name: originName
+        },
+        destination: {
+          id: destinationId,
+          name: destinationName
+        },
+        flag,
+        avoided_systems: avoidSystems
+      };
+    } catch (error) {
+      // If route calculation fails, return a result indicating failure
+      return {
+        route: [],
+        jumps: -1,
+        origin: { id: originId, name: '' },
+        destination: { id: destinationId, name: '' },
+        flag,
+      };
+    }
   }
 
   /**

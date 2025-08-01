@@ -18,10 +18,10 @@ export const PRIMARY_TRADE_HUBS: TradeHub[] = [
 
 // セカンダリートレードハブ
 export const SECONDARY_TRADE_HUBS: TradeHub[] = [
-  { id: 60008699, name: "Oursulaert V - Moon 11 - Federal Defense Union Logistic Support", systemId: 30002791, regionId: 10000054, isPrimary: false },
-  { id: 60015019, name: "Tash-Murkon Prime VII - Moon 1 - Imperial Shipment Storage", systemId: 30004971, regionId: 10000017, isPrimary: false },
-  { id: 60013762, name: "Agil VI - Moon 6 - CONCORD Logistic Support", systemId: 30004939, regionId: 10000069, isPrimary: false },
-  { id: 60015068, name: "Perimeter VI - Moon 11 - Overseer Revolutionary Logistics", systemId: 30003504, regionId: 10000058, isPrimary: false },
+  // { id: 60008699, name: "Oursulaert V - Moon 11 - Federal Defense Union Logistic Support", systemId: 30002791, regionId: 10000054, isPrimary: false },
+  // { id: 60015019, name: "Tash-Murkon Prime VII - Moon 1 - Imperial Shipment Storage", systemId: 30004971, regionId: 10000017, isPrimary: false },
+  // { id: 60013762, name: "Agil VI - Moon 6 - CONCORD Logistic Support", systemId: 30004939, regionId: 10000069, isPrimary: false },
+  // { id: 60015068, name: "Perimeter VI - Moon 11 - Overseer Revolutionary Logistics", systemId: 30003504, regionId: 10000058, isPrimary: false },
 ];
 
 // すべてのトレードハブ
