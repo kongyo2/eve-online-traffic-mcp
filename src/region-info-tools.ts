@@ -248,7 +248,7 @@ export const regionInfoTool = {
   },
   name: "region_info",
   parameters: z.object({
-    regionIds: z.array(z.number()).min(1).max(50).describe("Array of region IDs to get information for (max 50)")
+    regionIds: z.array(z.number()).min(1).max(50).describe("Array of region IDs to get information for (max 50). Use numeric IDs only, not names. Use region_name_to_id tool to convert names to IDs first.")
   }),
 };
 
@@ -313,7 +313,7 @@ export const constellationInfoTool = {
   },
   name: "constellation_info",
   parameters: z.object({
-    constellationIds: z.array(z.number()).min(1).max(50).describe("Array of constellation IDs to get information for (max 50)")
+    constellationIds: z.array(z.number()).min(1).max(50).describe("Array of constellation IDs to get information for (max 50). Use numeric IDs only, not names. Use universal_name_to_id tool to convert names to IDs first.")
   }),
 };
 
@@ -433,6 +433,6 @@ export const regionSystemsListTool = {
   },
   name: "region_systems_list",
   parameters: z.object({
-    regionIds: z.array(z.number()).min(1).max(10).describe("Array of region IDs to get system lists for (max 10)")
+    regionIds: z.array(z.number()).min(1).max(10).describe("Array of region IDs to get system lists for (max 10). Use numeric IDs only, not names. Use region_name_to_id tool to convert names to IDs first.")
   }),
 };

@@ -115,10 +115,10 @@ export const calculateRouteTool = {
   },
   name: "calculate_route",
   parameters: z.object({
-    origin: z.union([z.string(), z.number()]).describe("Origin solar system name or ID"),
-    destination: z.union([z.string(), z.number()]).describe("Destination solar system name or ID"),
+    origin: z.union([z.string(), z.number()]).describe("Origin solar system name (English proper noun like 'Jita') or ID"),
+    destination: z.union([z.string(), z.number()]).describe("Destination solar system name (English proper noun like 'Amarr') or ID"),
     flag: z.enum(['shortest', 'secure', 'insecure']).optional().default('shortest').describe("Route preference: shortest (default), secure (high-sec only), or insecure (low/null-sec allowed)"),
-    avoidSystems: z.array(z.union([z.string(), z.number()])).optional().describe("Optional array of solar system names or IDs to avoid in the route")
+    avoidSystems: z.array(z.union([z.string(), z.number()])).optional().describe("Optional array of solar system names (English proper nouns) or IDs to avoid in the route")
   }),
 };
 
@@ -259,10 +259,10 @@ export const calculateMultipleRoutesTool = {
   },
   name: "calculate_multiple_routes",
   parameters: z.object({
-    origin: z.union([z.string(), z.number()]).describe("Origin solar system name or ID"),
-    destinations: z.array(z.union([z.string(), z.number()])).min(1).max(20).describe("Array of destination solar system names or IDs (max 20)"),
+    origin: z.union([z.string(), z.number()]).describe("Origin solar system name (English proper noun like 'Jita') or ID"),
+    destinations: z.array(z.union([z.string(), z.number()])).min(1).max(20).describe("Array of destination solar system names (English proper nouns) or IDs (max 20)"),
     flag: z.enum(['shortest', 'secure', 'insecure']).optional().default('shortest').describe("Route preference: shortest (default), secure (high-sec only), or insecure (low/null-sec allowed)"),
-    avoidSystems: z.array(z.union([z.string(), z.number()])).optional().describe("Optional array of solar system names or IDs to avoid in all routes")
+    avoidSystems: z.array(z.union([z.string(), z.number()])).optional().describe("Optional array of solar system names (English proper nouns) or IDs to avoid in all routes")
   }),
 };
 
@@ -439,9 +439,9 @@ export const findSystemsInRangeTool = {
   },
   name: "find_systems_in_range",
   parameters: z.object({
-    origin: z.union([z.string(), z.number()]).describe("Origin solar system name or ID"),
+    origin: z.union([z.string(), z.number()]).describe("Origin solar system name (English proper noun like 'Jita') or ID"),
     maxJumps: z.number().min(1).max(10).describe("Maximum number of jumps to search (1-10)"),
     flag: z.enum(['shortest', 'secure', 'insecure']).optional().default('shortest').describe("Route preference: shortest (default), secure (high-sec only), or insecure (low/null-sec allowed)"),
-    avoidSystems: z.array(z.union([z.string(), z.number()])).optional().describe("Optional array of solar system names or IDs to avoid in routes")
+    avoidSystems: z.array(z.union([z.string(), z.number()])).optional().describe("Optional array of solar system names (English proper nouns) or IDs to avoid in routes")
   }),
 };

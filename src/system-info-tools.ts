@@ -307,7 +307,7 @@ export const solarSystemInfoTool = {
   },
   name: "solar_system_info",
   parameters: z.object({
-    systemIds: z.array(z.number()).min(1).max(100).describe("Array of solar system IDs to get information for (max 100)")
+    systemIds: z.array(z.number()).min(1).max(100).describe("Array of solar system IDs to get information for (max 100). Use numeric IDs only, not names. Use solar_system_name_to_id tool to convert names to IDs first.")
   }),
 };
 
@@ -372,7 +372,7 @@ export const stargateInfoTool = {
   },
   name: "stargate_info",
   parameters: z.object({
-    stargateIds: z.array(z.number()).min(1).max(50).describe("Array of stargate IDs to get information for (max 50)")
+    stargateIds: z.array(z.number()).min(1).max(50).describe("Array of stargate IDs to get information for (max 50). Use numeric IDs only, not names.")
   }),
 };
 
@@ -496,6 +496,6 @@ export const systemConnectionMapTool = {
   },
   name: "system_connection_map",
   parameters: z.object({
-    systemIds: z.array(z.number()).min(1).max(50).describe("Array of solar system IDs to generate connection map for (max 50)")
+    systemIds: z.array(z.number()).min(1).max(50).describe("Array of solar system IDs to generate connection map for (max 50). Use numeric IDs only, not names. Use solar_system_name_to_id tool to convert names to IDs first.")
   }),
 };

@@ -48,7 +48,7 @@ export const solarSystemNameToIdTool = {
   },
   name: "solar_system_name_to_id",
   parameters: z.object({
-    systemNames: z.array(z.string()).min(1).max(500).describe("Array of solar system names to convert to IDs (max 500)")
+    systemNames: z.array(z.string()).min(1).max(500).describe("Array of solar system names to convert to IDs (max 500). Use English proper nouns only (e.g., 'Jita', 'Amarr', 'Dodixie')")
   }),
 };
 
@@ -93,7 +93,7 @@ export const stationNameToIdTool = {
   },
   name: "station_name_to_id",
   parameters: z.object({
-    stationNames: z.array(z.string()).min(1).max(500).describe("Array of station names to convert to IDs (max 500)")
+    stationNames: z.array(z.string()).min(1).max(500).describe("Array of station names to convert to IDs (max 500). Use English proper nouns only (e.g., 'Jita IV - Moon 4 - Caldari Navy Assembly Plant')")
   }),
 };
 
@@ -138,7 +138,7 @@ export const regionNameToIdTool = {
   },
   name: "region_name_to_id",
   parameters: z.object({
-    regionNames: z.array(z.string()).min(1).max(500).describe("Array of region names to convert to IDs (max 500)")
+    regionNames: z.array(z.string()).min(1).max(500).describe("Array of region names to convert to IDs (max 500). Use English proper nouns only (e.g., 'The Forge', 'Domain', 'Sinq Laison')")
   }),
 };
 
@@ -213,6 +213,6 @@ export const universalNameToIdTool = {
   },
   name: "universal_name_to_id",
   parameters: z.object({
-    names: z.array(z.string()).min(1).max(500).describe("Array of entity names to convert to IDs (max 500)")
+    names: z.array(z.string()).min(1).max(500).describe("Array of entity names to convert to IDs (max 500). Use English proper nouns only (e.g., 'Jita', 'Caldari State', 'Tritanium')")
   }),
 };

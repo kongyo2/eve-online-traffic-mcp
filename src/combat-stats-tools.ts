@@ -84,6 +84,6 @@ export const getSystemCombatStatsTool = {
   },
   name: "get_system_combat_stats",
   parameters: z.object({
-    system_id: z.number().int().positive().describe("The solar system ID to get combat statistics for")
+    system_id: z.number().int().positive().describe("The solar system ID to get combat statistics for. Use numeric ID only, not name. Use solar_system_name_to_id tool to convert names to IDs first.")
   }),
 } as const;

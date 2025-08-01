@@ -283,7 +283,7 @@ export const getStationAgentsTool = {
   },
   name: "get_station_agents",
   parameters: z.object({
-    stations: z.array(z.union([z.string(), z.number()])).min(1).max(20).describe("Array of station names or IDs to get agent information for (max 20)"),
+    stations: z.array(z.union([z.string(), z.number()])).min(1).max(20).describe("Array of station names (English proper nouns like 'Jita IV - Moon 4 - Caldari Navy Assembly Plant') or IDs to get agent information for (max 20)"),
     includeResearchAgents: z.boolean().optional().default(false).describe("Whether to identify research agents (may be slower)")
   }),
 };
@@ -528,7 +528,7 @@ export const getStationServicesTool = {
   },
   name: "get_station_services",
   parameters: z.object({
-    stations: z.array(z.union([z.string(), z.number()])).min(1).max(50).describe("Array of station names or IDs to get service information for (max 50)"),
+    stations: z.array(z.union([z.string(), z.number()])).min(1).max(50).describe("Array of station names (English proper nouns like 'Jita IV - Moon 4 - Caldari Navy Assembly Plant') or IDs to get service information for (max 50)"),
     includeSystemInfo: z.boolean().optional().default(true).describe("Whether to include system security status and region information"),
     includeAgents: z.boolean().optional().default(false).describe("Whether to include agent information (may be slower)")
   }),
@@ -724,7 +724,7 @@ export const getSystemStationsTool = {
   },
   name: "get_system_stations",
   parameters: z.object({
-    systems: z.array(z.union([z.string(), z.number()])).min(1).max(20).describe("Array of solar system names or IDs to get station information for (max 20)"),
+    systems: z.array(z.union([z.string(), z.number()])).min(1).max(20).describe("Array of solar system names (English proper nouns like 'Jita', 'Amarr') or IDs to get station information for (max 20)"),
     serviceFilter: z.array(z.string()).optional().describe("Optional array of service names or keywords to filter stations by (e.g., ['market', 'reprocessing', 'cloning'])")
   }),
 };
@@ -965,8 +965,8 @@ export const findStationsWithServicesTool = {
   parameters: z.object({
     requiredServices: z.array(z.string()).min(1).describe("Array of required service names or keywords (e.g., ['market', 'reprocessing', 'cloning'])"),
     searchArea: z.object({
-      systems: z.array(z.union([z.string(), z.number()])).optional().describe("Optional array of solar system names or IDs to search in"),
-      regions: z.array(z.union([z.string(), z.number()])).optional().describe("Optional array of region names or IDs to search in")
+      systems: z.array(z.union([z.string(), z.number()])).optional().describe("Optional array of solar system names (English proper nouns like 'Jita', 'Amarr') or IDs to search in"),
+      regions: z.array(z.union([z.string(), z.number()])).optional().describe("Optional array of region names (English proper nouns like 'The Forge', 'Domain') or IDs to search in")
     }).describe("Area to search for stations (specify either systems or regions or both)"),
     securityFilter: z.object({
       minSecurity: z.number().min(-1).max(1).optional().describe("Minimum security status (e.g., 0.5 for high-sec only)"),
