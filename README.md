@@ -31,6 +31,10 @@ cd eve-online-traffic-mcp
 npm install
 ```
 
+## Recommended: MCP Sequential Thinking Tools
+
+For enhanced analysis and complex EVE Online queries, we recommend using this server alongside [MCP Sequential Thinking Tools](https://github.com/spences10/mcp-sequentialthinking-tools). This combination allows for sophisticated multi-step analysis of EVE Online data, route planning, and strategic decision-making through structured thinking processes.
+
 ## Usage
 
 ### Development Mode
@@ -56,6 +60,16 @@ Compile TypeScript to JavaScript:
 ```bash
 npm run build
 ```
+
+## Usage Notes
+
+### Language Recommendations for LLM Instructions
+
+When providing instructions to LLMs connected to this MCP server, **we recommend using English names for EVE Online entities** (solar systems, stations, regions, corporations, etc.) for optimal results. The server's name resolution system is primarily designed around English entity names, and using English ensures better accuracy and consistency in data retrieval.
+
+**Examples:**
+- ✅ Use: "Jita", "Amarr", "The Forge"
+- ❌ Avoid: Localized names in other languages
 
 ## Available Tools
 
