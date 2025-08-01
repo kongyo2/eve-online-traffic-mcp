@@ -1,5 +1,8 @@
 # EVE Online Traffic MCP Server
 
+> **⚠️ Beta Version Notice**  
+> This project is currently in beta development. Features may be incomplete, unstable, or subject to significant changes. Use at your own discretion and expect potential breaking changes in future updates.
+
 A comprehensive Model Context Protocol (MCP) server for EVE Online traffic, navigation, and system information using both the official ESI API and SDE data.
 
 ## Features
