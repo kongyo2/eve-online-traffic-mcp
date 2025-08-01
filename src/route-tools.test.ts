@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { calculateRouteTool } from "./route-tools.js";
+import { calculateRouteTool, findSystemsInRangeTool } from "./route-tools.js";
 
 // This test uses the actual ESI API and may take a few seconds to run.
 // It is intended for integration testing.
@@ -56,5 +56,98 @@ describe("calculateRouteTool (integration)", () => {
     // Assert
     expect(parsedResult.success).toBe(false);
     expect(parsedResult.message).toBe("Destination system 'InvalidSystemName456' not found");
+  });
+});
+
+// Test for findSystemsInRangeTool
+describe("findSystemsInRangeTool (integration)", () => {
+  it("should find systems within 2 jumps of Jita", async () => {
+    // Arrange
+    const args = {
+      origin: "Jita",
+      maxJumps: 2,
+    };
+
+    // Act
+    const result = await findSystemsInRangeTool.execute(args);
+    const parsedResult = JSON.parse(result);
+
+    // Assert
+    expect(parsedResult.success).toBe(true);
+    expect(parsedResult.message).toContain("systems within 2 jumps of Jita");
+    expect(parsedResult.systems).toBeInstanceOf(Array);
+    expect(parsedResult.summary.origin).toBe("Jita");
+    expect(parsedResult.summary.max_jumps).toBe(2);
+    expect(parsedResult.summary.systems_found).toBe(parsedResult.systems.length);
+    expect(parsedResult.summary.systems_processed).toBeGreaterThan(0);
+    
+    // Check that all systems are within the specified range
+    parsedResult.systems.forEach((system: any) => {
+      expect(system.jumps).toBeGreaterThanOrEqual(1);
+      expect(system.jumps).toBeLessThanOrEqual(2);
+      expect(system.id).toBeDefined();
+      expect(system.name).toBeDefined();
+    });
+    
+    // Verify that we're now processing systems using graph traversal
+    console.log(`Systems processed: ${parsedResult.summary.systems_processed}, Systems found: ${parsedResult.summary.systems_found}`);
+  }, 60000); // 60 second timeout for this test
+
+  it("should find systems within 1 jump of Amarr", async () => {
+    // Arrange
+    const args = {
+      origin: "Amarr",
+      maxJumps: 1,
+    };
+
+    // Act
+    const result = await findSystemsInRangeTool.execute(args);
+    const parsedResult = JSON.parse(result);
+
+    // Assert
+    expect(parsedResult.success).toBe(true);
+    expect(parsedResult.systems).toBeInstanceOf(Array);
+    expect(parsedResult.summary.max_jumps).toBe(1);
+    
+    // All systems should be exactly 1 jump away
+    parsedResult.systems.forEach((system: any) => {
+      expect(system.jumps).toBe(1);
+    });
+    
+    console.log(`Systems processed: ${parsedResult.summary.systems_processed}, Systems found: ${parsedResult.summary.systems_found}`);
+  }, 60000);
+
+  it("should return an error for invalid origin system", async () => {
+    // Arrange
+    const args = {
+      origin: "InvalidSystemName789",
+      maxJumps: 2,
+    };
+
+    // Act
+    const result = await findSystemsInRangeTool.execute(args);
+    const parsedResult = JSON.parse(result);
+
+    // Assert
+    expect(parsedResult.success).toBe(false);
+    expect(parsedResult.message).toBe("Origin system 'InvalidSystemName789' not found");
+    expect(parsedResult.systems).toEqual([]);
+  });
+
+  it("should return an error for invalid maxJumps", async () => {
+    // Arrange
+    const args = {
+      origin: "Jita",
+      maxJumps: 15, // Over the limit of 10
+    };
+
+    // Act
+    const result = await findSystemsInRangeTool.execute(args);
+    const parsedResult = JSON.parse(result);
+
+    // Assert
+    expect(parsedResult.success).toBe(false);
+    expect(parsedResult.message).toBe("Maximum jumps must be between 1 and 10");
+    expect(parsedResult.systems).toEqual([]);
   });
 });

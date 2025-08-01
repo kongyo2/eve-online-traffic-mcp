@@ -347,3 +347,4 @@ MIT License - see [LICENSE](LICENSE) file for details.
 - [EVE Online ESI API](https://esi.evetech.net/) - Official EVE Online API
 - [EVE SDE API](https://sde.jita.space/) - Static Data Export by jita.space
 - [FastMCP](https://github.com/punkpeye/fastmcp) - MCP server framework
+- [FastMCP Boilerplate](https://github.com/punkpeye/fastmcp-boilerplate) - This project was created using the FastMCP Boilerplate template by Frank Fiegel (frank@glama.ai), licensed under MIT License

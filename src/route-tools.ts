@@ -267,7 +267,7 @@ export const calculateMultipleRoutesTool = {
 };
 
 /**
- * Find systems within a certain jump range
+ * Find systems within a certain jump range using graph traversal
  */
 export const findSystemsInRangeTool = {
   annotations: {
@@ -275,7 +275,7 @@ export const findSystemsInRangeTool = {
     readOnlyHint: true, // This tool doesn't modify anything
     title: "Find Systems in Range",
   },
-  description: "Find all solar systems within a specified jump range from an origin system. Useful for finding nearby systems for activities.",
+  description: "Find all solar systems within a specified jump range from an origin system using efficient graph traversal. Builds a stargate connection graph for accurate results.",
   execute: async (args: { 
     origin: string | number; 
     maxJumps: number;
@@ -308,66 +308,124 @@ export const findSystemsInRangeTool = {
         originId = args.origin;
       }
 
-      // Get all solar system IDs (this is a simplified approach)
-      // In a production system, you might want to use a more efficient graph traversal
-      const allSystemIds = await esiClient.getAllSolarSystemIds();
-      
-      // Sample a subset of systems to avoid too many API calls
-      const sampleSize = Math.min(100, allSystemIds.length);
-      const sampledSystems = allSystemIds
-        .filter(id => id !== originId)
-        .sort(() => 0.5 - Math.random())
-        .slice(0, sampleSize);
-
-      const systemsInRange = [];
-      const errors = [];
-
-      // Check each sampled system
-      for (const systemId of sampledSystems) {
-        try {
-          const route = await esiClient.calculateRoute(
-            originId,
-            systemId,
-            args.flag || 'shortest'
-          );
-          
-          const jumps = route.length - 1;
-          if (jumps <= args.maxJumps) {
-            // Get system name
-            const systemNames = await esiClient.idsToNames([systemId]);
-            const systemName = systemNames[0]?.name || `System ${systemId}`;
-            
-            systemsInRange.push({
-              id: systemId,
-              name: systemName,
-              jumps: jumps
-            });
+      // Convert avoid systems to IDs if provided
+      let avoidSystemIds: Set<number> = new Set();
+      if (args.avoidSystems && args.avoidSystems.length > 0) {
+        for (const system of args.avoidSystems) {
+          if (typeof system === 'string') {
+            const avoidResult = await esiClient.getSolarSystemIds([system]);
+            if (avoidResult.length > 0) {
+              avoidSystemIds.add(avoidResult[0].id);
+            }
+          } else {
+            avoidSystemIds.add(system);
           }
-        } catch (error) {
-          // Skip systems that can't be reached
+        }
+      }
+
+      // Build adjacency graph using stargate connections
+      const adjacencyGraph = new Map<number, number[]>();
+      const systemsInRange = new Map<number, { id: number; name: string; jumps: number }>();
+      const visited = new Set<number>();
+      const queue: Array<{ systemId: number; jumps: number }> = [];
+
+      // Start BFS from origin
+      queue.push({ systemId: originId, jumps: 0 });
+      visited.add(originId);
+
+      // Get origin system name
+      const originNames = await esiClient.idsToNames([originId]);
+      const originName = originNames[0]?.name || `System ${originId}`;
+
+      let systemsProcessed = 0;
+      const maxSystemsToProcess = 1000; // Limit to prevent excessive API calls
+
+      while (queue.length > 0 && systemsProcessed < maxSystemsToProcess) {
+        const { systemId, jumps } = queue.shift()!;
+        systemsProcessed++;
+
+        // Skip if we've reached max jumps or if system should be avoided
+        if (jumps >= args.maxJumps || avoidSystemIds.has(systemId)) {
+          continue;
+        }
+
+        try {
+          // Get system info to find connected stargates
+          const systemInfo = await esiClient.getSolarSystemInfo(systemId);
+          
+          if (!systemInfo.stargates || systemInfo.stargates.length === 0) {
+            continue;
+          }
+
+          // Process each stargate to find connected systems
+          for (const stargateId of systemInfo.stargates) {
+            try {
+              const stargateInfo = await esiClient.getStargateInfo(stargateId);
+              const connectedSystemId = stargateInfo.destination.system_id;
+
+              // Skip if already visited, is the origin, or should be avoided
+              if (visited.has(connectedSystemId) || connectedSystemId === originId || avoidSystemIds.has(connectedSystemId)) {
+                continue;
+              }
+
+              // Apply security filtering based on flag
+              if (args.flag === 'secure') {
+                const connectedSystemInfo = await esiClient.getSolarSystemInfo(connectedSystemId);
+                if (connectedSystemInfo.security_status < 0.5) {
+                  continue; // Skip low-sec and null-sec systems
+                }
+              }
+
+              visited.add(connectedSystemId);
+              const nextJumps = jumps + 1;
+
+              // Add to results if within range
+              if (nextJumps <= args.maxJumps) {
+                const systemNames = await esiClient.idsToNames([connectedSystemId]);
+                const systemName = systemNames[0]?.name || `System ${connectedSystemId}`;
+                
+                systemsInRange.set(connectedSystemId, {
+                  id: connectedSystemId,
+                  name: systemName,
+                  jumps: nextJumps
+                });
+
+                // Add to queue for further exploration if not at max jumps
+                if (nextJumps < args.maxJumps) {
+                  queue.push({ systemId: connectedSystemId, jumps: nextJumps });
+                }
+              }
+            } catch (stargateError) {
+              // Skip problematic stargates
+              continue;
+            }
+          }
+        } catch (systemError) {
+          // Skip problematic systems
           continue;
         }
       }
 
-      // Sort by jump count
-      systemsInRange.sort((a, b) => a.jumps - b.jumps);
+      // Convert to array and sort by jump count
+      const results = Array.from(systemsInRange.values()).sort((a, b) => a.jumps - b.jumps);
 
       return JSON.stringify({
         success: true,
-        message: `Found ${systemsInRange.length} systems within ${args.maxJumps} jumps of ${typeof args.origin === 'string' ? args.origin : `System ${args.origin}`}`,
-        systems: systemsInRange,
+        message: `Found ${results.length} systems within ${args.maxJumps} jumps of ${originName} using graph traversal`,
+        systems: results,
         summary: {
-          origin: typeof args.origin === 'string' ? args.origin : `System ${args.origin}`,
+          origin: originName,
           max_jumps: args.maxJumps,
-          systems_found: systemsInRange.length,
-          systems_checked: sampledSystems.length,
+          systems_found: results.length,
+          systems_processed: systemsProcessed,
           route_type: args.flag || 'shortest',
+          avoided_systems_count: avoidSystemIds.size,
           jump_distribution: {
-            "1_jump": systemsInRange.filter(s => s.jumps === 1).length,
-            "2_jumps": systemsInRange.filter(s => s.jumps === 2).length,
-            "3_jumps": systemsInRange.filter(s => s.jumps === 3).length,
-            "4_jumps": systemsInRange.filter(s => s.jumps === 4).length,
-            "5_plus_jumps": systemsInRange.filter(s => s.jumps >= 5).length
+            "1_jump": results.filter(s => s.jumps === 1).length,
+            "2_jumps": results.filter(s => s.jumps === 2).length,
+            "3_jumps": results.filter(s => s.jumps === 3).length,
+            "4_jumps": results.filter(s => s.jumps === 4).length,
+            "5_plus_jumps": results.filter(s => s.jumps >= 5).length
           }
         }
       });
