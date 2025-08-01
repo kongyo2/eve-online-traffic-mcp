@@ -1,5 +1,5 @@
 import { FastMCP } from "fastmcp";
-import { 
+import {
   solarSystemNameToIdTool,
   stationNameToIdTool,
   regionNameToIdTool,
@@ -32,6 +32,9 @@ import {
 import {
   findNearestLandmarksTool
 } from "./landmark-tools.js";
+import {
+  findNearestTradeHubTool
+} from "./nearest-trade-hub-tool.js";
 
 const server = new FastMCP({
   name: "EVE Online Traffic MCP",
@@ -70,6 +73,9 @@ server.addTool(getStationAgentsTool);
 
 // Add landmark tools
 server.addTool(findNearestLandmarksTool);
+
+// Add trade hub tools
+server.addTool(findNearestTradeHubTool);
 
 server.addResource({
   async load() {
@@ -114,6 +120,9 @@ Combat Statistics:
 
 Landmark Information:
 - find_nearest_landmarks: Find the nearest EVE Online landmarks to a specified solar system
+
+Trade Hub Information:
+- find_nearest_trade_hub: Find the nearest trade hub to a specified solar system with detailed route information
 
 All tools use the official EVE Online ESI API, EVE-KILL API, and SDE data.
 `,
