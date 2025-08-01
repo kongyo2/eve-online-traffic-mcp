@@ -49,6 +49,27 @@ export interface SDEConstellationInfo {
   solarSystems?: string[];
 }
 
+export interface SDEAgentInfo {
+  characterID: number;
+  agentTypeID?: number;
+  corporationID?: number;
+  divisionID?: number;
+  isLocator?: boolean;
+  level?: number;
+  locationID?: number;
+  quality?: number;
+}
+
+export interface SDEAgentTypeInfo {
+  agentTypeID: number;
+  agentType?: string;
+}
+
+export interface SDEResearchAgentInfo {
+  characterID: number;
+  typeID?: number;
+}
+
 export class SDEClient {
   private readonly baseUrl = 'https://sde.jita.space/latest';
   private readonly userAgent = 'EVE-Traffic-MCP/1.0.0';
@@ -207,5 +228,129 @@ export class SDEClient {
     }
 
     return await response.json() as SDEConstellationInfo;
+  }
+
+  /**
+   * Get all agent IDs
+   */
+  async getAllAgentIds(): Promise<number[]> {
+    const response = await fetch(`${this.baseUrl}/characters/agents`, {
+      method: 'GET',
+      headers: {
+        'User-Agent': this.userAgent,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`SDE API error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json() as number[];
+  }
+
+  /**
+   * Get agent information by ID
+   */
+  async getAgentInfo(agentId: number): Promise<SDEAgentInfo> {
+    const response = await fetch(`${this.baseUrl}/characters/agents/${agentId}`, {
+      method: 'GET',
+      headers: {
+        'User-Agent': this.userAgent,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`SDE API error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json() as SDEAgentInfo;
+  }
+
+  /**
+   * Get multiple agent information by IDs
+   */
+  async getMultipleAgentInfo(agentIds: number[]): Promise<SDEAgentInfo[]> {
+    const promises = agentIds.map(id => this.getAgentInfo(id));
+    const results = await Promise.allSettled(promises);
+
+    return results
+      .filter((result): result is PromiseFulfilledResult<SDEAgentInfo> => result.status === 'fulfilled')
+      .map(result => result.value);
+  }
+
+  /**
+   * Get agent type information by ID
+   */
+  async getAgentTypeInfo(agentTypeId: number): Promise<SDEAgentTypeInfo> {
+    const response = await fetch(`${this.baseUrl}/characters/agentTypes/${agentTypeId}`, {
+      method: 'GET',
+      headers: {
+        'User-Agent': this.userAgent,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`SDE API error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json() as SDEAgentTypeInfo;
+  }
+
+  /**
+   * Get all research agent IDs
+   */
+  async getAllResearchAgentIds(): Promise<number[]> {
+    const response = await fetch(`${this.baseUrl}/characters/researchAgents`, {
+      method: 'GET',
+      headers: {
+        'User-Agent': this.userAgent,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`SDE API error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json() as number[];
+  }
+
+  /**
+   * Get research agent information by ID
+   */
+  async getResearchAgentInfo(agentId: number): Promise<SDEResearchAgentInfo> {
+    const response = await fetch(`${this.baseUrl}/characters/researchAgents/${agentId}`, {
+      method: 'GET',
+      headers: {
+        'User-Agent': this.userAgent,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`SDE API error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json() as SDEResearchAgentInfo;
+  }
+
+  /**
+   * Get agents by location (station/structure)
+   */
+  async getAgentsByLocation(locationId: number): Promise<SDEAgentInfo[]> {
+    try {
+      // Get all agent IDs first
+      const allAgentIds = await this.getAllAgentIds();
+      
+      // Filter agents by location (this requires fetching all agents, which might be expensive)
+      // For better performance, we'll sample a subset
+      const sampleSize = Math.min(1000, allAgentIds.length);
+      const sampledAgentIds = allAgentIds.slice(0, sampleSize);
+      
+      const agents = await this.getMultipleAgentInfo(sampledAgentIds);
+      
+      return agents.filter(agent => agent.locationID === locationId);
+    } catch (error) {
+      console.warn(`Failed to get agents by location ${locationId}:`, error);
+      return [];
+    }
   }
 }

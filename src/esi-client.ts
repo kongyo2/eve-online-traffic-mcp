@@ -157,6 +157,38 @@ export interface ESIConstellationInfo {
   systems: number[];
 }
 
+export interface ESIStationInfo {
+  station_id: number;
+  name: string;
+  system_id: number;
+  type_id: number;
+  position: {
+    x: number;
+    y: number;
+    z: number;
+  };
+  max_dockable_ship_volume: number;
+  office_rental_cost: number;
+  owner: number;
+  race_id?: number;
+  reprocessing_efficiency: number;
+  reprocessing_stations_take: number;
+  services: string[];
+}
+
+export interface ESIStructureInfo {
+  structure_id: number;
+  name: string;
+  system_id: number;
+  type_id: number;
+  position: {
+    x: number;
+    y: number;
+    z: number;
+  };
+  owner_id: number;
+}
+
 
 
 export class ESIClient {
@@ -525,6 +557,84 @@ export class ESIClient {
     }
 
     return await response.json() as EveKillBattlesResponse;
+  }
+
+  /**
+   * Get station information by ID
+   */
+  async getStationInfo(stationId: number): Promise<ESIStationInfo> {
+    const response = await fetch(`${this.baseUrl}/universe/stations/${stationId}/`, {
+      method: 'GET',
+      headers: {
+        'User-Agent': this.userAgent,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`ESI API error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json() as ESIStationInfo;
+  }
+
+  /**
+   * Get multiple station information by IDs
+   */
+  async getMultipleStationInfo(stationIds: number[]): Promise<ESIStationInfo[]> {
+    const promises = stationIds.map(id => this.getStationInfo(id));
+    const results = await Promise.allSettled(promises);
+
+    return results
+      .filter((result): result is PromiseFulfilledResult<ESIStationInfo> => result.status === 'fulfilled')
+      .map(result => result.value);
+  }
+
+  /**
+   * Get structure information by ID (requires authentication for non-public structures)
+   */
+  async getStructureInfo(structureId: number): Promise<ESIStructureInfo> {
+    const response = await fetch(`${this.baseUrl}/universe/structures/${structureId}/`, {
+      method: 'GET',
+      headers: {
+        'User-Agent': this.userAgent,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`ESI API error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json() as ESIStructureInfo;
+  }
+
+  /**
+   * Get all public structure IDs
+   */
+  async getAllPublicStructureIds(): Promise<number[]> {
+    const response = await fetch(`${this.baseUrl}/universe/structures/`, {
+      method: 'GET',
+      headers: {
+        'User-Agent': this.userAgent,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`ESI API error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json() as number[];
+  }
+
+  /**
+   * Get stations in a solar system
+   */
+  async getSystemStations(systemId: number): Promise<ESIStationInfo[]> {
+    const systemInfo = await this.getSolarSystemInfo(systemId);
+    if (!systemInfo.stations || systemInfo.stations.length === 0) {
+      return [];
+    }
+
+    return await this.getMultipleStationInfo(systemInfo.stations);
   }
 
 

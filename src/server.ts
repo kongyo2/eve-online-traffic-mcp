@@ -23,6 +23,12 @@ import {
 import {
   getSystemCombatStatsTool
 } from "./combat-stats-tools.js";
+import {
+  getStationServicesTool,
+  getSystemStationsTool,
+  findStationsWithServicesTool,
+  getStationAgentsTool
+} from "./station-services-tools.js";
 
 const server = new FastMCP({
   name: "EVE Online Traffic MCP",
@@ -53,6 +59,12 @@ server.addTool(findSystemsInRangeTool);
 // Add combat statistics tool
 server.addTool(getSystemCombatStatsTool);
 
+// Add station services tools
+server.addTool(getStationServicesTool);
+server.addTool(getSystemStationsTool);
+server.addTool(findStationsWithServicesTool);
+server.addTool(getStationAgentsTool);
+
 server.addResource({
   async load() {
     return {
@@ -72,6 +84,12 @@ System Information:
 - solar_system_info: Get comprehensive solar system information from ESI and SDE
 - stargate_info: Get stargate information and connections
 - system_connection_map: Generate connection maps for solar systems
+
+Station Services:
+- get_station_services: Get comprehensive station information including available services and agents
+- get_system_stations: Get all stations in specified solar systems with their services
+- find_stations_with_services: Find stations that offer specific services within specified areas
+- get_station_agents: Get detailed information about agents located at specific stations
 
 Region Information:
 - region_info: Get comprehensive region information including constellations and systems
@@ -213,6 +231,68 @@ server.addPrompt({
     return `Please find the most dangerous systems in ${args.search_area}. Analyze up to ${limit} systems and provide:\n\n- Ranking by danger level\n- Current PvP activity levels\n- Recent high-value kills\n- Threat assessment for each system\n- Recommendations for safe travel\n\nUse the find_dangerous_systems tool and provide a comprehensive threat report.`;
   },
   name: "eve-danger-assessment",
+});
+
+server.addPrompt({
+  arguments: [
+    {
+      description: "Station names or IDs to analyze",
+      name: "stations",
+      required: true,
+    },
+  ],
+  description: "Analyze station services and facilities",
+  load: async (args) => {
+    return `Please analyze these EVE Online stations and provide detailed information about their services and facilities:\n\n${args.stations}\n\nUse the get_station_services tool to provide:\n\n- Available services at each station\n- Docking capabilities and restrictions\n- Reprocessing efficiency and fees\n- Security status of the system\n- Owner and faction information\n- Recommendations for specific activities`;
+  },
+  name: "eve-station-analysis",
+});
+
+server.addPrompt({
+  arguments: [
+    {
+      description: "Required services (e.g., market, reprocessing, cloning)",
+      name: "services",
+      required: true,
+    },
+    {
+      description: "Search area: system names, region names, or 'nearby'",
+      name: "location",
+      required: true,
+    },
+    {
+      description: "Security preference: high-sec, low-sec, null-sec, or any",
+      name: "security",
+      required: false,
+    },
+  ],
+  description: "Find stations with specific services in a given area",
+  load: async (args) => {
+    const security = args.security || 'any';
+    return `Please find stations that offer these services: ${args.services}\n\nSearch in: ${args.location}\nSecurity preference: ${security}\n\nUse the find_stations_with_services tool and provide:\n\n- List of matching stations with their locations\n- Service availability at each station\n- Security status and travel safety\n- Distance and route information if applicable\n- Recommendations for the best options`;
+  },
+  name: "eve-service-finder",
+});
+
+server.addPrompt({
+  arguments: [
+    {
+      description: "Station names or IDs to analyze for agents",
+      name: "stations",
+      required: true,
+    },
+    {
+      description: "Whether to include research agents (slower)",
+      name: "include_research",
+      required: false,
+    },
+  ],
+  description: "Analyze agents available at specific stations",
+  load: async (args) => {
+    const includeResearch = args.include_research === 'true' || args.include_research === 'yes';
+    return `Please analyze the agents available at these EVE Online stations: ${args.stations}\n\nInclude research agents: ${includeResearch}\n\nUse the get_station_agents tool and provide:\n\n- List of all agents at each station\n- Agent types and specializations\n- Agent levels and quality ratings\n- Corporation affiliations\n- Research agent identification\n- Recommendations for mission running or research`;
+  },
+  name: "eve-agent-finder",
 });
 
 server.start({
