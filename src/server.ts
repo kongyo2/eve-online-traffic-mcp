@@ -11,6 +11,11 @@ import {
   systemConnectionMapTool
 } from "./system-info-tools.js";
 import {
+  regionInfoTool,
+  constellationInfoTool,
+  regionSystemsListTool
+} from "./region-info-tools.js";
+import {
   calculateRouteTool,
   calculateMultipleRoutesTool,
   findSystemsInRangeTool
@@ -34,6 +39,11 @@ server.addTool(universalNameToIdTool);
 server.addTool(solarSystemInfoTool);
 server.addTool(stargateInfoTool);
 server.addTool(systemConnectionMapTool);
+
+// Add region information tools
+server.addTool(regionInfoTool);
+server.addTool(constellationInfoTool);
+server.addTool(regionSystemsListTool);
 
 // Add route calculation tools
 server.addTool(calculateRouteTool);
@@ -62,6 +72,11 @@ System Information:
 - solar_system_info: Get comprehensive solar system information from ESI and SDE
 - stargate_info: Get stargate information and connections
 - system_connection_map: Generate connection maps for solar systems
+
+Region Information:
+- region_info: Get comprehensive region information including constellations and systems
+- constellation_info: Get constellation information including systems and boundaries
+- region_systems_list: Get detailed lists of all systems in specified regions
 
 Route Calculation:
 - calculate_route: Calculate the shortest route between two solar systems

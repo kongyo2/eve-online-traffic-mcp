@@ -138,6 +138,25 @@ export interface EveKillBattlesResponse {
   }>;
 }
 
+export interface ESIRegionInfo {
+  region_id: number;
+  name: string;
+  description?: string;
+  constellations: number[];
+}
+
+export interface ESIConstellationInfo {
+  constellation_id: number;
+  name: string;
+  region_id: number;
+  position: {
+    x: number;
+    y: number;
+    z: number;
+  };
+  systems: number[];
+}
+
 
 
 export class ESIClient {
@@ -220,6 +239,60 @@ export class ESIClient {
   async getRegionIds(regionNames: string[]): Promise<Array<{ id: number; name: string }>> {
     const result = await this.namesToIds(regionNames);
     return result.regions || [];
+  }
+
+  /**
+   * Get all region IDs
+   */
+  async getAllRegionIds(): Promise<number[]> {
+    const response = await fetch(`${this.baseUrl}/universe/regions/`, {
+      method: 'GET',
+      headers: {
+        'User-Agent': this.userAgent,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`ESI API error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json() as number[];
+  }
+
+  /**
+   * Get region information by ID
+   */
+  async getRegionInfo(regionId: number): Promise<ESIRegionInfo> {
+    const response = await fetch(`${this.baseUrl}/universe/regions/${regionId}/`, {
+      method: 'GET',
+      headers: {
+        'User-Agent': this.userAgent,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`ESI API error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json() as ESIRegionInfo;
+  }
+
+  /**
+   * Get constellation information by ID
+   */
+  async getConstellationInfo(constellationId: number): Promise<ESIConstellationInfo> {
+    const response = await fetch(`${this.baseUrl}/universe/constellations/${constellationId}/`, {
+      method: 'GET',
+      headers: {
+        'User-Agent': this.userAgent,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`ESI API error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json() as ESIConstellationInfo;
   }
 
   /**

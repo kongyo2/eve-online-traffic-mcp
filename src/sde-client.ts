@@ -30,6 +30,25 @@ export interface SDEStargateInfo {
   destinationSolarSystemID?: number;
 }
 
+export interface SDERegionInfo {
+  regionID: number;
+  regionNameID?: number;
+  center?: number[];
+  max?: number[];
+  min?: number[];
+  constellations?: string[];
+}
+
+export interface SDEConstellationInfo {
+  constellationID: number;
+  constellationNameID?: number;
+  regionID: number;
+  center?: number[];
+  max?: number[];
+  min?: number[];
+  solarSystems?: string[];
+}
+
 export class SDEClient {
   private readonly baseUrl = 'https://sde.jita.space/latest';
   private readonly userAgent = 'EVE-Traffic-MCP/1.0.0';
@@ -116,5 +135,77 @@ export class SDEClient {
     return results
       .filter((result): result is PromiseFulfilledResult<SDESolarSystemInfo> => result.status === 'fulfilled')
       .map(result => result.value);
+  }
+
+  /**
+   * Get all region IDs from SDE
+   */
+  async getAllRegionIds(): Promise<number[]> {
+    const response = await fetch(`${this.baseUrl}/universe/regions`, {
+      method: 'GET',
+      headers: {
+        'User-Agent': this.userAgent,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`SDE API error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json() as number[];
+  }
+
+  /**
+   * Get region information by ID from SDE
+   */
+  async getRegionInfo(regionId: number): Promise<SDERegionInfo> {
+    const response = await fetch(`${this.baseUrl}/universe/regions/${regionId}`, {
+      method: 'GET',
+      headers: {
+        'User-Agent': this.userAgent,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`SDE API error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json() as SDERegionInfo;
+  }
+
+  /**
+   * Get all constellation IDs from SDE
+   */
+  async getAllConstellationIds(): Promise<number[]> {
+    const response = await fetch(`${this.baseUrl}/universe/constellations`, {
+      method: 'GET',
+      headers: {
+        'User-Agent': this.userAgent,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`SDE API error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json() as number[];
+  }
+
+  /**
+   * Get constellation information by ID from SDE
+   */
+  async getConstellationInfo(constellationId: number): Promise<SDEConstellationInfo> {
+    const response = await fetch(`${this.baseUrl}/universe/constellations/${constellationId}`, {
+      method: 'GET',
+      headers: {
+        'User-Agent': this.userAgent,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`SDE API error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json() as SDEConstellationInfo;
   }
 }
