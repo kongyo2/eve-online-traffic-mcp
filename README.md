@@ -1,5 +1,7 @@
 # EVE Online Traffic MCP Server
 
+[![smithery badge](https://smithery.ai/badge/@kongyo2/eve-online-traffic-mcp)](https://smithery.ai/server/@kongyo2/eve-online-traffic-mcp)
+
 > **⚠️ Beta Version Notice**  
 > This project is currently in beta development. Features may be incomplete, unstable, or subject to significant changes. Use at your own discretion and expect potential breaking changes in future updates.
 
@@ -50,6 +52,15 @@ EVE-KILLは、EVE Onlineのキルメール追跡と分析を行うモダンな�
 
 ## Installation
 
+### Installing via Smithery
+
+To install eve-online-traffic-mcp for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@kongyo2/eve-online-traffic-mcp):
+
+```bash
+npx -y @smithery/cli install @kongyo2/eve-online-traffic-mcp --client claude
+```
+
+### Manual Installation
 ```bash
 git clone https://github.com/kongyo2/eve-online-traffic-mcp.git
 cd eve-online-traffic-mcp
