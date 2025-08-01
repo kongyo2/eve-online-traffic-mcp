@@ -370,3 +370,4 @@ MIT License - see [LICENSE](LICENSE) file for details.
 - [EVE SDE API](https://sde.jita.space/) - Static Data Export by jita.space
 - [FastMCP](https://github.com/punkpeye/fastmcp) - MCP server framework
 - [FastMCP Boilerplate](https://github.com/punkpeye/fastmcp-boilerplate) - This project was created using the FastMCP Boilerplate template by Frank Fiegel (frank@glama.ai), licensed under MIT License
+- [tuskermanshu/swagger-mcp-server](https://github.com/tuskermanshu/swagger-mcp-server) - Special thanks for the inspiration and foundation for the Swagger/OpenAPI integration in this project.
