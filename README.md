@@ -2,6 +2,8 @@
 
 [![smithery badge](https://smithery.ai/badge/@kongyo2/eve-online-traffic-mcp)](https://smithery.ai/server/@kongyo2/eve-online-traffic-mcp)
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/kongyo2/eve-online-traffic-mcp)
+
 > **⚠️ Beta Version Notice**  
 > This project is currently in beta development. Features may be incomplete, unstable, or subject to significant changes. Use at your own discretion and expect potential breaking changes in future updates.
 
@@ -382,3 +384,4 @@ MIT License - see [LICENSE](LICENSE) file for details.
 - [FastMCP](https://github.com/punkpeye/fastmcp) - MCP server framework
 - [FastMCP Boilerplate](https://github.com/punkpeye/fastmcp-boilerplate) - This project was created using the FastMCP Boilerplate template by Frank Fiegel (frank@glama.ai), licensed under MIT License
 - [tuskermanshu/swagger-mcp-server](https://github.com/tuskermanshu/swagger-mcp-server) - Special thanks for the inspiration and foundation for the Swagger/OpenAPI integration in this project.
+
