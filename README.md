@@ -2,12 +2,11 @@
 
 [![smithery badge](https://smithery.ai/badge/@kongyo2/eve-online-traffic-mcp)](https://smithery.ai/server/@kongyo2/eve-online-traffic-mcp)
 
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/kongyo2/eve-online-traffic-mcp)
-
-
 <a href="https://glama.ai/mcp/servers/@kongyo2/eve-online-traffic-mcp">
-  <img width="380" height="200" src="https://glama.ai/mcp/servers/@kongyo2/eve-online-traffic-mcp/badge" alt="eve-online-traffic-mcp" />
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@kongyo2/eve-online-traffic-mcp/badge" alt="eve-online-traffic-mcp MCP server" />
 </a>
+
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/kongyo2/eve-online-traffic-mcp)
 
 
 > **⚠️ Beta Version Notice**  
@@ -16,6 +15,7 @@
 A comprehensive Model Context Protocol (MCP) server for EVE Online traffic, navigation, and system information using both the official ESI API and SDE data.
 
 ## Features
+
 
 This MCP server provides comprehensive tools for EVE Online data access:
 
@@ -390,5 +390,4 @@ MIT License - see [LICENSE](LICENSE) file for details.
 - [FastMCP](https://github.com/punkpeye/fastmcp) - MCP server framework
 - [FastMCP Boilerplate](https://github.com/punkpeye/fastmcp-boilerplate) - This project was created using the FastMCP Boilerplate template by Frank Fiegel (frank@glama.ai), licensed under MIT License
 - [tuskermanshu/swagger-mcp-server](https://github.com/tuskermanshu/swagger-mcp-server) - Special thanks for the inspiration and foundation for the Swagger/OpenAPI integration in this project.
-
 
